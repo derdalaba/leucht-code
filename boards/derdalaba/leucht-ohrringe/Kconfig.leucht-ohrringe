@@ -1,0 +1,4 @@
+config BOARD_LEUCHT_OHRRINGE
+    bool "leucht-ohrringe"
+	select SOC_NRF52832_QFAA
+	select ARM

@@ -1,0 +1,10 @@
+identifier: leucht-ohrringe/nrf52832
+name: le
+vendor: derdalaba
+type: mcu
+arch: arm
+ram: 64
+flash: 220
+toolchain:
+  - zephyr
+supported: []

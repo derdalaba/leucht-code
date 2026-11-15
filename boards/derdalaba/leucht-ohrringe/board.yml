@@ -1,0 +1,6 @@
+board:
+  name: leucht-ohrringe
+  full_name: leucht-ohrringe
+  vendor: derdalaba
+  socs:
+    - name: nrf52832

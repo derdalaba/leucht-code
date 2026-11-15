@@ -1,0 +1,85 @@
+/dts-v1/;
+
+#include <nordic/nrf52832_qfaa.dtsi>
+#include <dt-bindings/led/led.h>
+#include "leucht-ohrringe-pinctrl.dtsi"
+
+/ {
+	model = "le";
+	compatible = "derdalaba,leucht-ohrringe";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,uart-mcumgr = &uart0;
+	};
+
+	aliases {
+		led-strip = &ws2812;
+	};
+};
+
+&flash0 {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot";
+			reg = <0x0 DT_SIZE_K(48)>;
+		};
+
+		slot0_partition: partition@c000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0xc000 DT_SIZE_K(220)>;
+		};
+
+		slot1_partition: partition@43000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-1";
+			reg = <0x43000 DT_SIZE_K(220)>;
+		};
+
+		storage_partition: partition@7a000 {
+			compatible = "zephyr,mapped-partition";
+			label = "storage";
+			reg = <0x7a000 DT_SIZE_K(24)>;
+		};
+	};
+};
+/* UART for CH340 serial communication (Assign your RX/TX pins) */
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+/* SPI driver used to generate accurate WS2812B timings */
+&spi0 {
+	compatible = "nordic,nrf-spi";
+	status = "okay";
+	pinctrl-0 = <&spi0_default>;
+	pinctrl-names = "default";
+
+	ws2812: ws2812@0 {
+		compatible = "worldsemi,ws2812-spi";
+		reg = <0>;
+		spi-max-frequency = <4000000>;
+
+		/* WS2812B timing protocol constants */
+		spi-one-frame = <0x70>;
+		spi-zero-frame = <0x40>;
+
+		chain-length = <1>; /* Change to your LED count */
+		color-mapping = <LED_COLOR_ID_GREEN
+		                 LED_COLOR_ID_RED
+		                 LED_COLOR_ID_BLUE>;
+	};
+};
