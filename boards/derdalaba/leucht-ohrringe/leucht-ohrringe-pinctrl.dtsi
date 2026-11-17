@@ -1,23 +1,47 @@
+#include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
+
 &pinctrl {
+	/*
+	 * CH340N USB-to-UART bridge.
+	 *
+	 * nRF P0.06 TX -> CH340N RX
+	 * nRF P0.08 RX <- CH340N TX
+	 */
 	uart0_default: uart0_default {
 		group1 {
-			psels = <NRF_PSEL(UART_TX, 0, 8)>, /* Change 6/8 to your TX/RX pins */
-			        <NRF_PSEL(UART_RX, 0, 6)>;
+			psels = <NRF_PSEL(UART_TX, 0, 6)>,
+				<NRF_PSEL(UART_RX, 0, 8)>;
 		};
 	};
 
 	uart0_sleep: uart0_sleep {
 		group1 {
-			psels = <NRF_PSEL(UART_TX, 0, 8)>,
-			        <NRF_PSEL(UART_RX, 0, 6)>;
+			psels = <NRF_PSEL(UART_TX, 0, 6)>,
+				<NRF_PSEL(UART_RX, 0, 8)>;
+
 			low-power-enable;
 		};
 	};
 
-	spi0_default: spi0_default {
-            group1 {
-                    psels = <NRF_PSEL(SPIM_SCK, 0, 26)>, /* Dummy pin for SCK */
-                            <NRF_PSEL(SPIM_MOSI, 0, 25)>; /* WS2812B Data Line */
-            };
-    };
+	/*
+	 * ICM-42670-L:
+	 *
+	 * SDA = P0.13
+	 * SCL = P0.14
+	 */
+	i2c1_default: i2c1_default {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 13)>,
+				<NRF_PSEL(TWIM_SCL, 0, 14)>;
+		};
+	};
+
+	i2c1_sleep: i2c1_sleep {
+		group1 {
+			psels = <NRF_PSEL(TWIM_SDA, 0, 13)>,
+				<NRF_PSEL(TWIM_SCL, 0, 14)>;
+
+			low-power-enable;
+		};
+	};
 };

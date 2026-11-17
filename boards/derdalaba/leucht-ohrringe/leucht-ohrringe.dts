@@ -1,85 +1,113 @@
 /dts-v1/;
 
 #include <nordic/nrf52832_qfaa.dtsi>
-#include <dt-bindings/led/led.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
+
 #include "leucht-ohrringe-pinctrl.dtsi"
 
 / {
-	model = "le";
+	model = "Leucht Ohrringe nRF52832";
 	compatible = "derdalaba,leucht-ohrringe";
 
 	chosen {
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
-		zephyr,code-partition = &slot0_partition;
-		zephyr,console = &uart0;
-		zephyr,shell-uart = &uart0;
-		zephyr,uart-mcumgr = &uart0;
-	};
 
-	aliases {
-		led-strip = &ws2812;
+		/*
+		 * Console output uses SEGGER RTT over SWD.
+		 * Therefore no zephyr,console or zephyr,shell-uart
+		 * assignment is required here.
+		 */
 	};
 };
 
-&flash0 {
-	partitions {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges;
 
-		boot_partition: partition@0 {
-			compatible = "zephyr,mapped-partition";
-			label = "mcuboot";
-			reg = <0x0 DT_SIZE_K(48)>;
-		};
-
-		slot0_partition: partition@c000 {
-			compatible = "zephyr,mapped-partition";
-			label = "image-0";
-			reg = <0xc000 DT_SIZE_K(220)>;
-		};
-
-		slot1_partition: partition@43000 {
-			compatible = "zephyr,mapped-partition";
-			label = "image-1";
-			reg = <0x43000 DT_SIZE_K(220)>;
-		};
-
-		storage_partition: partition@7a000 {
-			compatible = "zephyr,mapped-partition";
-			label = "storage";
-			reg = <0x7a000 DT_SIZE_K(24)>;
-		};
-	};
-};
-/* UART for CH340 serial communication (Assign your RX/TX pins) */
-&uart0 {
+/*
+ * GPIO controller and board-level GPIO initialization.
+ */
+&gpio0 {
 	status = "okay";
+
+	/*
+	 * ICM-42670-L AD0:
+	 *
+	 * P0.12 is driven low during GPIO initialization.
+	 * AD0 low selects I2C address 0x68.
+	 */
+	imu_ad0 {
+		gpio-hog;
+		gpios = <12 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "ICM42670_AD0";
+	};
+};
+
+&gpiote {
+	status = "okay";
+};
+
+
+/*
+ * UART0 connected to the CH340N USB-to-UART bridge.
+ *
+ * UART is available to the application, but it is not the
+ * Zephyr console. Console/printk uses RTT.
+ */
+&uart0 {
+	compatible = "nordic,nrf-uarte";
+	status = "okay";
+
 	current-speed = <115200>;
+
 	pinctrl-0 = <&uart0_default>;
 	pinctrl-1 = <&uart0_sleep>;
 	pinctrl-names = "default", "sleep";
 };
-/* SPI driver used to generate accurate WS2812B timings */
-&spi0 {
-	compatible = "nordic,nrf-spi";
+
+
+/*
+ * ICM-42670-L I2C bus:
+ *
+ * P0.13 = SDA
+ * P0.14 = SCL
+ * P0.12 = AD0, held low above
+ * P0.11 = INT1
+ */
+&i2c1 {
+	compatible = "nordic,nrf-twim";
 	status = "okay";
-	pinctrl-0 = <&spi0_default>;
-	pinctrl-names = "default";
 
-	ws2812: ws2812@0 {
-		compatible = "worldsemi,ws2812-spi";
-		reg = <0>;
-		spi-max-frequency = <4000000>;
+	clock-frequency = <I2C_BITRATE_STANDARD>;
 
-		/* WS2812B timing protocol constants */
-		spi-one-frame = <0x70>;
-		spi-zero-frame = <0x40>;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-1 = <&i2c1_sleep>;
+	pinctrl-names = "default", "sleep";
 
-		chain-length = <1>; /* Change to your LED count */
-		color-mapping = <LED_COLOR_ID_GREEN
-		                 LED_COLOR_ID_RED
-		                 LED_COLOR_ID_BLUE>;
+};
+
+
+/*
+ * Standalone bring-up firmware.
+ *
+ * The application is intentionally linked at address 0x00000000.
+ * Do not set zephyr,code-partition while MCUboot is disabled.
+ */
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		app_partition: partition@0 {
+			label = "application";
+			reg = <0x00000000 DT_SIZE_K(488)>;
+		};
+
+		storage_partition: partition@7a000 {
+			label = "storage";
+			reg = <0x0007a000 DT_SIZE_K(24)>;
+		};
 	};
 };
