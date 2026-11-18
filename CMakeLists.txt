@@ -10,6 +10,11 @@ set(GNUARMEMB_TOOLCHAIN_PATH "C:/ncs/toolchains/5f5ef0cea0/opt")
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(test-sdk)
+project(test-sdk LANGUAGES C CXX)
 
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE
+	src/main.cpp
+	src/uart.cpp
+	src/imu.cpp
+	src/ntc.cpp
+)

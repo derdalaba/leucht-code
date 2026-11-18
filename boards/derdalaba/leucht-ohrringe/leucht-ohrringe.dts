@@ -13,15 +13,14 @@
 	chosen {
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
+		zephyr,console = &uart0;
+	};
 
-		/*
-		 * Console output uses SEGGER RTT over SWD.
-		 * Therefore no zephyr,console or zephyr,shell-uart
-		 * assignment is required here.
-		 */
+	zephyr,user {
+		extra-gpios-gpios = <&gpio0 0 0>, <&gpio0 1 0>, <&gpio0 2 0>, <&gpio0 3 0>,
+				    <&gpio0 27 0>, <&gpio0 29 0>;
 	};
 };
-
 
 /*
  * GPIO controller and board-level GPIO initialization.
@@ -47,7 +46,6 @@
 	status = "okay";
 };
 
-
 /*
  * UART0 connected to the CH340N USB-to-UART bridge.
  *
@@ -64,7 +62,6 @@
 	pinctrl-1 = <&uart0_sleep>;
 	pinctrl-names = "default", "sleep";
 };
-
 
 /*
  * ICM-42670-L I2C bus:
@@ -83,9 +80,7 @@
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-1 = <&i2c1_sleep>;
 	pinctrl-names = "default", "sleep";
-
 };
-
 
 /*
  * Standalone bring-up firmware.
@@ -109,5 +104,11 @@
 			label = "storage";
 			reg = <0x0007a000 DT_SIZE_K(24)>;
 		};
+	};
+};
+
+&uart0_default {
+	group1 {
+		psels = <NRF_PSEL(UART_RX, 0, 6)>, <NRF_PSEL(UART_TX, 0, 8)>;
 	};
 };
