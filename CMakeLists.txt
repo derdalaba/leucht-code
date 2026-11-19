@@ -5,8 +5,7 @@ set(BOARD leucht-ohrringe)
 
 set(Python3_EXECUTABLE "C:/ncs/toolchains/5f5ef0cea0/opt/bin/python.exe")
 
-set(ZEPHYR_TOOLCHAIN_VARIANT gnuarmemb)
-set(GNUARMEMB_TOOLCHAIN_PATH "C:/ncs/toolchains/5f5ef0cea0/opt")
+set(ZEPHYR_TOOLCHAIN_VARIANT zephyr)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
@@ -17,4 +16,5 @@ target_sources(app PRIVATE
 	src/uart.cpp
 	src/imu.cpp
 	src/ntc.cpp
+	src/led.cpp
 )

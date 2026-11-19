@@ -1,5 +1,7 @@
 #include "imu.hpp"
 
+#include <cmath>
+
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/sys/printk.h>
@@ -93,4 +95,51 @@ int imu_read_sample(ImuSample &sample)
 	sample.gyro_y = static_cast<int16_t>((data[8] << 8) | data[9]);
 	sample.gyro_z = static_cast<int16_t>((data[10] << 8) | data[11]);
 	return 0;
+}
+
+Vec3 get_direction(ImuSample const &sample) {
+	return get_direction(sample.accel_x, sample.accel_y, sample.accel_z);
+}
+
+Vec3 get_direction(int16_t const &accel_x, int16_t const &accel_y, int16_t const &accel_z) {
+	float const magnitude = std::sqrt(
+		static_cast<float>(accel_x) * accel_x +
+		static_cast<float>(accel_y) * accel_y +
+		static_cast<float>(accel_z) * accel_z);
+	if (magnitude == 0.0F) {
+		return Vec3();
+	}
+	return Vec3(accel_x / magnitude, accel_y / magnitude, accel_z / magnitude);
+}
+
+Direction get_heading(Vec3 direction) {
+	if (std::abs(direction.x) > std::abs(direction.y)) {
+		if (std::abs(direction.x) > std::abs(direction.z)) {
+			if (direction.x > 0.0F) {
+				return NORTH;
+			} else {
+				return SOUTH;
+			}
+		} else {
+			if (direction.z > 0.0F) {
+				return UP;
+			} else {
+				return DOWN;
+			}
+		}
+	} else {
+		if (std::abs(direction.y) > std::abs(direction.z)) {
+			if (direction.y > 0.0F) {
+				return WEST;
+			} else {
+				return EAST;
+			}
+		} else {
+			if (direction.z > 0.0F) {
+				return UP;
+			} else {
+				return DOWN;
+			}
+		}
+	}
 }
