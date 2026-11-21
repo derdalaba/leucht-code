@@ -57,6 +57,7 @@ std::vector<float> TAPS{
     0.000000000000000000,
 };
 Color PURPLE{190, 0, 255};
+Color PINK{255, 0, 190};
 
 int set_leds(Vec3 const& dir) {
 	int const num_leds = get_num_leds();
@@ -91,10 +92,10 @@ int set_leds(Vec3 const& dir) {
 			
 			float brightness = (a_x * b_y) - (a_y * b_x);
 			if (brightness > 0.0F) {
-				led_set((i + 4) % num_leds, PURPLE * 0.125F * brightness);
+				led_set((i + 4) % num_leds, PURPLE * 0.175F * brightness);
 			} else {
 				brightness = std::powf(std::abs(brightness), 5.0F);
-				led_set((i + 4) % num_leds, static_cast<int>(12 * brightness), 0, static_cast<int>(12 * brightness));
+				led_set((i + 4) % num_leds, PINK * 0.175F * brightness);
 			}
 		}
 		return update();
@@ -164,11 +165,13 @@ int main(void)
 			filter_x.filter(static_cast<float>(sample.accel_x)));
 		sample.accel_y = static_cast<int16_t>(
 			filter_y.filter(static_cast<float>(sample.accel_y)));
+		/*
 		sample.accel_z = static_cast<int16_t>(
 			filter_z.filter(static_cast<float>(sample.accel_z)));
+		*/
 		Vec3 dir = get_direction(sample);
 		set_leds(dir);
 
-		k_msleep(5);
+		//k_msleep(5);
 	}
 }
