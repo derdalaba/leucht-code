@@ -38,7 +38,7 @@ public:
 		if (mTapCount == 0) {
 			return unfiltered_value;
 		}
-		unfiltered_value /= 32768.0F;
+		unfiltered_value = unfiltered_value * (1.0F / 32768.0F);
 		q31_t un_fil = 0;
 		arm_float_to_q31(&unfiltered_value, &un_fil, 1);
 		arm_fir_fast_q31(&mInstance, &un_fil, &un_fil, 1);
