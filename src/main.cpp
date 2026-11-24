@@ -58,7 +58,7 @@ int set_leds(Vec3 const& dir) {
 		k_msleep(16);
 		return ret;
 	} else {
-		
+		float magnitude = std::sqrtf(std::powf(dir.x, 2.0F) + std::powf(dir.y, 2.0F));
 		float angle = std::atan2(dir.y, dir.x) - 0.065F; //slight error correction
         if (angle_initialized) {
             angle += turns * TWO_PI;
@@ -87,9 +87,9 @@ int set_leds(Vec3 const& dir) {
 			
 			float brightness = (a_x * b_y) - (a_y * b_x);
 			if (brightness > 0.0F) {
-				led_set((i + 4) % num_leds, PURPLE * 0.175F * brightness);
+				led_set((i + 4) % num_leds, PURPLE * 0.175F * std::powf(brightness, (1.3F - magnitude) * 2.0F));
 			} else {
-				brightness = std::powf(std::abs(brightness), 5.0F);
+				brightness = std::powf(std::abs(brightness), (magnitude + 0.15F) * 6.0F);
 				led_set((i + 4) % num_leds, PINK * 0.175F * brightness);
 			}
 		}
